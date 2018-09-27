@@ -1,5 +1,6 @@
 package com.tw.relife;
 
+import com.tw.relife.exception.SimpleNotFoundException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -47,5 +48,18 @@ class RelifeAppTest {
 
         assertNotNull(response);
         assertEquals(300, response.getStatus());
+    }
+
+    @Test
+    void should_return_status_code_404_when_handler_throw_exception() {
+        RelifeApp app = new RelifeApp(request -> {
+            throw new SimpleNotFoundException();
+        });
+
+        RelifeRequest whateverRequest = new RelifeRequest("/any/path", RelifeMethod.GET);
+        RelifeResponse response = app.process(whateverRequest);
+
+        assertNotNull(response);
+        assertEquals(404, response.getStatus());
     }
 }

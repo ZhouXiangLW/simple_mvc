@@ -1,6 +1,6 @@
 package com.tw.relife;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import com.tw.relife.annotations.RelifeStatusCode;
 
 public class RelifeApp implements RelifeAppHandler {
     private final RelifeAppHandler handler;
@@ -20,7 +20,12 @@ public class RelifeApp implements RelifeAppHandler {
         try {
             return handler.process(request);
         } catch (Exception e) {
-            return new RelifeResponse(500);
+            if (e.getClass().isAnnotationPresent(RelifeStatusCode.class)) {
+                int statusCode = e.getClass().getDeclaredAnnotation(RelifeStatusCode.class).statusCode();
+                return new RelifeResponse(statusCode);
+            } else {
+                return new RelifeResponse(500);
+            }
         }
     }
 }
