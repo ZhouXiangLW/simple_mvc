@@ -37,4 +37,15 @@ class RelifeAppTest {
 
         assertEquals(500, response.getStatus());
     }
+
+    @Test
+    void should_create_response2() {
+        RelifeApp app = new RelifeApp(request -> new RelifeResponse(300));
+
+        RelifeRequest whateverRequest = new RelifeRequest("/any/path", RelifeMethod.GET);
+        RelifeResponse response = app.process(whateverRequest);
+
+        assertNotNull(response);
+        assertEquals(300, response.getStatus());
+    }
 }
