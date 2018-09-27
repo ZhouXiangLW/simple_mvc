@@ -1,5 +1,7 @@
 package com.tw.relife;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tw.relife.annotations.RelifeController;
 import com.tw.relife.annotations.RelifeRequestMapping;
 
@@ -42,7 +44,7 @@ public class RelifeMvcHandlerBuilder implements RelifeAppHandler {
         RelifeAppHandler handler = request -> {
             try {
                 method.setAccessible(true);
-                return (RelifeResponse) method.invoke(controllerClass.newInstance(), request);
+                return getResponseFromHandler(method.invoke(controllerClass.newInstance(), request));
             } catch (InvocationTargetException e) {
                 throw (Exception) e.getCause();
             }
@@ -50,11 +52,14 @@ public class RelifeMvcHandlerBuilder implements RelifeAppHandler {
         addAction(path, relifeMethod, handler);
     }
 
-    private RelifeResponse getResponseFromHandler(Object object) {
+    private RelifeResponse getResponseFromHandler(Object object) throws JsonProcessingException {
+        if (object == null) {
+            return null;
+        }
         if (object.getClass().equals(RelifeResponse.class)) {
             return (RelifeResponse) object;
         }
-        return new RelifeResponse(200,)
+        return new RelifeResponse(200, new ObjectMapper().writeValueAsString(object), "application/json");
     }
 
     public RelifeMvcHandlerBuilder addAction(String path, RelifeMethod method, RelifeAppHandler handler) {
