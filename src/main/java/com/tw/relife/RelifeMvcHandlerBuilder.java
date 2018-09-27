@@ -6,13 +6,12 @@ import com.tw.relife.annotations.RelifeRequestMapping;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class RelifeMvcHandlerBuilder implements RelifeAppHandler {
 
     private Map<RelifeHttpPath, RelifeAppHandler> handlerMap = new HashMap<>();
+    private Set<Class<?>> controllers = new HashSet<>();
 
     @Override
     public RelifeResponse process(RelifeRequest request) throws Exception {
@@ -33,6 +32,7 @@ public class RelifeMvcHandlerBuilder implements RelifeAppHandler {
         Arrays.stream(controllerClass.getDeclaredMethods())
                 .filter(method -> method.isAnnotationPresent(RelifeRequestMapping.class))
                 .forEach(method -> addMethodToAction(controllerClass, method));
+        controllers.add(controllerClass);
         return this;
     }
 
@@ -48,6 +48,13 @@ public class RelifeMvcHandlerBuilder implements RelifeAppHandler {
             }
         };
         addAction(path, relifeMethod, handler);
+    }
+
+    private RelifeResponse getResponseFromHandler(Object object) {
+        if (object.getClass().equals(RelifeResponse.class)) {
+            return (RelifeResponse) object;
+        }
+        return new RelifeResponse(200,)
     }
 
     public RelifeMvcHandlerBuilder addAction(String path, RelifeMethod method, RelifeAppHandler handler) {
@@ -73,6 +80,9 @@ public class RelifeMvcHandlerBuilder implements RelifeAppHandler {
         if (controllerClass == null) {
             throw new IllegalArgumentException("controllerClass can not be null");
         }
+        if (controllers.contains(controllerClass)) {
+            throw new IllegalArgumentException("can not add same controller twice");
+        }
         if (Modifier.isInterface(controllerClass.getModifiers())
                 || Modifier.isAbstract(controllerClass.getModifiers())) {
             throw new IllegalArgumentException("controllerClass can not be interface or abstract");
@@ -86,5 +96,4 @@ public class RelifeMvcHandlerBuilder implements RelifeAppHandler {
             throw new IllegalArgumentException("action param must be RelifeRequest and count msut be 1");
         }
     }
-
 }
