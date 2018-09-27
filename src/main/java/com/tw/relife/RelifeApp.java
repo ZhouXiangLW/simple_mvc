@@ -20,12 +20,17 @@ public class RelifeApp implements RelifeAppHandler {
         try {
             return handler.process(request);
         } catch (Exception e) {
-            if (e.getClass().isAnnotationPresent(RelifeStatusCode.class)) {
-                int statusCode = e.getClass().getDeclaredAnnotation(RelifeStatusCode.class).statusCode();
-                return new RelifeResponse(statusCode);
-            } else {
-                return new RelifeResponse(500);
-            }
+            return handleUnHappyPath(e);
         }
     }
+
+    private RelifeResponse handleUnHappyPath(Exception e) {
+        if (e.getClass().isAnnotationPresent(RelifeStatusCode.class)) {
+            int statusCode = e.getClass().getDeclaredAnnotation(RelifeStatusCode.class).statusCode();
+            return new RelifeResponse(statusCode);
+        } else {
+            return new RelifeResponse(500);
+        }
+    }
+
 }
